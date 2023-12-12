@@ -52,9 +52,22 @@
     <button type="submit">Submit</button>
   </form>
   <noscript>
-    <p>Functionality is limited with javaScript turned off.</p>
-    <input type="number" id="rating" name="rating" min="1" max="5" required>
+    <form action="https://httpbin.org/post" method="POST">
+      <label for="rating-fallback">How satisfied are you? (Fallback for non-JS users)</label>
+      <select name="rating" id="rating-fallback" required>
+        <option value="" selected disabled>Choose a rating</option>
+        <option value="1">1 Star</option>
+        <option value="2">2 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="5">5 Stars</option>
+      </select>
+      <input type="hidden" name="question" value="How satisfied are you?">
+      <input type="hidden" name="sentBy" value="HTML">
+      <button type="submit">Submit</button>
+    </form>
   </noscript>
+  
 </rating-widget>
 
 <script>
