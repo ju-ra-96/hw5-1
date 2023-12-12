@@ -149,7 +149,7 @@
         if(ratingInput.value > 3)
         message.textContent = `Thanks for the ${ratingInput.value} star rating!`;
         else
-        message.textContent = `We're sorry you're not completely satisfied.`;
+        message.textContent = `Thanks for the rating of ${ratingInput.value} stars. We will try to do better next time`;
         document.body.appendChild(message); // Append the message to the body
       })
       .catch(error => {
