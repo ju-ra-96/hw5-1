@@ -31,6 +31,11 @@
   .star.selected {
     color: var(--star-color-selected);
   }
+  
+  /* Hide the JS-generated stars initially */
+  .js-rating {
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -47,14 +52,19 @@
     <label for="rating">How satisfied are you?</label>
     <input type="hidden" name="question" value="How satisfied are you?">
     <input type="hidden" name="sentBy" value="HTML">
-    <div id="star-rating"></div>
-    <input type="number" id="rating" name="rating" min="1" max="5" required style="display: none;">
+    <div id="star-rating" class="js-rating"></div>
+    <noscript>
+      <select name="rating" id="rating" required>
+        <option value="" selected disabled>Choose a rating</option>
+        <option value="1">1 Star</option>
+        <option value="2">2 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="5">5 Stars</option>
+      </select>
+    </noscript>
     <button type="submit">Submit</button>
   </form>
-  <noscript>
-    <p>Functionality is limited with javaScript turned off.</p>
-    <input type="number" id="rating" name="rating" min="1" max="5" required style="display: none;">
-  </noscript>
 </rating-widget>
 
 <script>
@@ -62,7 +72,7 @@
     const form = document.getElementById('rating-form');
     const symbolSelect = document.getElementById('symbol-select');
     const starRatingEl = document.getElementById('star-rating');
-    const ratingInput = document.getElementById('rating');
+    const noscriptRating = document.querySelector('noscript select');
     const maxRating = 5;
 
     // Function to create rating symbols
@@ -71,34 +81,42 @@
       for (let i = 1; i <= maxRating; i++) {
         const symbolEl = document.createElement('span');
         symbolEl.classList.add('star');
-        symbolEl.dataset.rating = i;
+        symbolEl.dataset.ratingValue = i;
         symbolEl.textContent = selectedSymbol; // Use the selected symbol
-        symbolEl.addEventListener('click', function() {
-          ratingInput.value = i; // Set the rating value
-          highlightSymbols(i);
-        });
-        symbolEl.addEventListener('mouseover', function() {
-          highlightSymbols(i);
-        });
-        symbolEl.addEventListener('mouseout', function() {
-          updateSymbols();
-        });
         starRatingEl.appendChild(symbolEl);
       }
     }
 
-    // Function to highlight symbols up to the one clicked or hovered over
-    function highlightSymbols(rating) {
-      document.querySelectorAll('.star').forEach((symbol, index) => {
-        symbol.classList.toggle('selected', index < rating);
+    // Function to update the display of the symbols based on the selected rating
+    function updateSymbols(ratingValue) {
+      const stars = document.querySelectorAll('#star-rating .star');
+      stars.forEach((star, index) => {
+        star.classList.toggle('selected', index < ratingValue);
       });
     }
 
-    // Function to update the display of the symbols based on the selected rating
-    function updateSymbols() {
-      const currentRating = ratingInput.value;
-      highlightSymbols(currentRating);
+    // Initially create the rating symbols
+    createRatingSymbols(symbolSelect.value);
+
+    // Show the JS rating stars and hide the noscript rating
+    starRatingEl.style.display = 'inline-block';
+    if (noscriptRating) {
+      noscriptRating.style.display = 'none';
     }
+
+    // Attach event listeners to stars for interaction
+    starRatingEl.addEventListener('click', event => {
+      if (event.target.classList.contains('star')) {
+        const ratingValue = event.target.dataset.ratingValue;
+        updateSymbols(ratingValue);
+        // Store the rating value in a hidden input to be submitted with the form
+        const ratingInput = document.createElement('input');
+        ratingInput.type = 'hidden';
+        ratingInput.name = 'rating';
+        ratingInput.value = ratingValue;
+        form.appendChild(ratingInput);
+      }
+    });
 
     // Event listener for symbol selection change
     symbolSelect.addEventListener('change', function() {
@@ -109,13 +127,6 @@
     form.addEventListener('submit', function(event) {
       event.preventDefault(); // Prevent the default form submission
 
-      // Check if a rating has been selected
-      if (!ratingInput.value || ratingInput.value === "0") {
-        alert('Please select a rating before submitting.');
-        return; // Stop the submission if no rating is selected
-      }
-
-      // Create a FormData object from the form
       const formData = new FormData(form);
       formData.append('sentBy', 'JS'); // Indicate that the form was sent by JavaScript
 
@@ -127,19 +138,12 @@
       .then(response => response.json())
       .then(data => {
         console.log('Response:', data); // Log the response to the console
-        form.style.display = 'none'; // Hide the form after submission
-        // Display the rating message
-        const message = document.createElement('p');
-        message.textContent = `Thanks for the ${ratingInput.value} star rating!`;
-        document.body.appendChild(message); // Append the message to the body
+        // Show a thank you message or handle the response
       })
       .catch(error => {
         console.error('Error:', error);
       });
     });
-
-    // Initialize the rating widget with the first symbol in the select
-    createRatingSymbols(symbolSelect.value);
   });
 </script>
 </body>
