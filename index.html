@@ -146,7 +146,10 @@
         form.style.display = 'none'; // Hide the form after submission
         // Display the rating message
         const message = document.createElement('p');
+        if(ratingInput.value > 3)
         message.textContent = `Thanks for the ${ratingInput.value} star rating!`;
+        else
+        message.textContent = `We're sorry you're not completely satisfied.`;
         document.body.appendChild(message); // Append the message to the body
       })
       .catch(error => {
